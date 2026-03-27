@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mortgage Calculator</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #eef0f4;
+  color: #1a1a2e;
+  padding: 28px 20px 48px;
+  min-height: 100vh;
+}
+h1 {
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: #0d1b2a;
+  letter-spacing: -0.02em;
+}
+.container { max-width: 640px; margin: 0 auto; }
+
+/* Cards */
+.card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px 22px;
+  margin-bottom: 14px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+}
+.card-title {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #1565c0;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #e3f2fd;
+}
+
+/* Rows */
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 36px;
+  margin-bottom: 4px;
+}
+.row:last-child { margin-bottom: 0; }
+.row-label {
+  font-size: 0.9rem;
+  color: #444;
+  flex: 1;
+  padding-right: 12px;
+}
+
+/* Inputs */
+.input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.sym {
+  font-size: 0.88rem;
+  color: #999;
+  min-width: 10px;
+}
+input[type="number"] {
+  width: 120px;
+  padding: 7px 10px;
+  border: 1.5px solid #dde3ed;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #1a1a2e;
+  background: #f6f8fc;
+  text-align: right;
+  -moz-appearance: textfield;
+  transition: border-color 0.18s, background 0.18s;
+}
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+input[type="number"]:focus {
+  outline: none;
+  border-color: #1565c0;
+  background: #fff;
+}
+.sm-input { width: 100px !important; }
+
+/* Derived values */
+.value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #222;
+  min-width: 120px;
+  text-align: right;
+}
+.value.muted { color: #777; font-weight: 500; }
+
+/* Summary */
+.summary-card {
+  background: #1a1a2e;
+  border-radius: 14px;
+  padding: 20px 22px;
+  margin-bottom: 14px;
+}
+.summary-title {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #69b4f0;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #2e3a55;
+}
+.s-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.88rem;
+  padding: 5px 0;
+  color: #aab4cc;
+}
+.s-row .s-val { color: #e0e8ff; font-weight: 600; }
+.s-divider { border: none; border-top: 1px solid #2e3a55; margin: 10px 0; }
+.s-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0 2px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.escrow-total { color: #69f0ae; }
+.noescrow-total { color: #ffd54f; }
+.s-total-row .s-val { font-size: 1.08rem; }
+
+/* Closing costs */
+.cc-section-title {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #999;
+  margin: 14px 0 6px;
+}
+.cc-section-title:first-of-type { margin-top: 0; }
+.cc-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.875rem;
+  padding: 4px 0;
+  color: #555;
+}
+.cc-row .cc-val { font-size: 0.875rem; color: #333; }
+.cc-subtotal {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #333;
+  padding: 7px 0 3px;
+  margin-top: 3px;
+  border-top: 1px solid #eee;
+}
+.cc-input-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3px 0;
+}
+.cc-input-row span { font-size: 0.875rem; color: #555; }
+
+/* Escrow toggle */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.toggle-label-txt {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #888;
+}
+.tbtn {
+  padding: 6px 18px;
+  border: 2px solid #dde3ed;
+  border-radius: 20px;
+  background: #f5f7fb;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  color: #888;
+  transition: all 0.18s;
+  letter-spacing: 0.03em;
+}
+.tbtn.active {
+  background: #1565c0;
+  border-color: #1565c0;
+  color: #fff;
+}
+
+/* Reserve box */
+.reserve-box {
+  background: #e8f1fd;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-top: 14px;
+}
+.reserve-box-title {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #1565c0;
+  margin-bottom: 8px;
+}
+
+/* Grand total */
+.grand-total {
+  background: #0d1b2a;
+  border-radius: 11px;
+  padding: 14px 16px;
+  margin-top: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.gt-label {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #7a8faa;
+}
+.gt-val {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #69f0ae;
+}
+
+/* Optional checkbox */
+.opt-label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.875rem;
+  color: #555;
+  cursor: pointer;
+}
+input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  accent-color: #1565c0;
+  cursor: pointer;
+}
+.opt-val { font-size: 0.875rem; color: #333; }
+
+/* HOA toggle */
+.hoa-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.hoa-toggle-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>Mortgage Calculator</h1>
+
+<!-- 1. Purchase Info -->
+<div class="card">
+  <div class="card-title">Purchase Info</div>
+  <div class="row">
+    <span class="row-label">Sales Price</span>
+    <div class="input-wrap"><span class="sym">$</span><input type="number" id="salesPrice" value="400000" min="0" step="1000" oninput="calc()" onchange="calc()"></div>
+  </div>
+  <div class="row">
+    <span class="row-label">Down Payment</span>
+    <div class="input-wrap"><input type="number" id="downPct" value="20" min="0" max="100" step="0.5" oninput="calc()" onchange="calc()"><span class="sym">%</span></div>
+  </div>
+  <div class="row">
+    <span class="row-label">Down Payment Amount</span>
+    <span class="value muted" id="downAmt">—</span>
+  </div>
+  <div class="row">
+    <span class="row-label">Loan Amount</span>
+    <span class="value" id="loanAmt">—</span>
+  </div>
+</div>
+
+<!-- 2. Rate -->
+<div class="card">
+  <div class="card-title">Interest Rate &amp; Monthly Payment</div>
+  <div class="row">
+    <span class="row-label">Interest Rate (30-yr fixed)</span>
+    <div class="input-wrap"><input type="number" id="rate" value="6.5" min="0" max="30" step="0.125" oninput="calc()" onchange="calc()"><span class="sym">%</span></div>
+  </div>
+  <div class="row">
+    <span class="row-label">Principal + Interest (monthly)</span>
+    <span class="value" id="pi">—</span>
+  </div>
+</div>
+
+<!-- 3. Property Tax -->
+<div class="card">
+  <div class="card-title">Property Tax</div>
+  <div class="row">
+    <span class="row-label">Assessment Rate</span>
+    <div class="input-wrap"><input type="number" id="assessPct" value="100" min="0" max="100" step="1" oninput="calc()" onchange="calc()"><span class="sym">%</span></div>
+  </div>
+  <div class="row">
+    <span class="row-label">Assessed Value</span>
+    <span class="value muted" id="assessedVal">—</span>
+  </div>
+  <div class="row">
+    <span class="row-label">Tax Rate</span>
+    <div class="input-wrap"><input type="number" id="taxRate" value="2.2" min="0" max="10" step="0.01" oninput="calc()" onchange="calc()"><span class="sym">%</span></div>
+  </div>
+  <div class="row">
+    <span class="row-label">Monthly Tax</span>
+    <span class="value" id="monthlyTax">—</span>
+  </div>
+</div>
+
+<!-- 4. Home Insurance -->
+<div class="card">
+  <div class="card-title">Home Insurance</div>
+  <div class="row">
+    <span class="row-label">Annual Premium</span>
+    <div class="input-wrap"><span class="sym">$</span><input type="number" id="annualIns" value="1532" min="0" step="100" oninput="calc()" onchange="calc()"></div>
+  </div>
+  <div class="row">
+    <span class="row-label">Monthly Insurance</span>
+    <span class="value" id="monthlyIns">—</span>
+  </div>
+</div>
+
+<!-- 5. HOA -->
+<div class="card">
+  <div class="card-title">HOA</div>
+  <div class="row">
+    <span class="row-label">Annual HOA Fee</span>
+    <div class="input-wrap"><span class="sym">$</span><input type="number" id="annualHOA" value="0" min="0" step="100" oninput="calc()" onchange="calc()"></div>
+  </div>
+  <div class="row">
+    <span class="row-label">Monthly HOA</span>
+    <span class="value" id="monthlyHOA">—</span>
+  </div>
+</div>
+
+<!-- Summary -->
+<div class="summary-card">
+  <div class="summary-title">Total Monthly Cost</div>
+  <div class="s-row"><span>Principal + Interest</span><span class="s-val" id="sum_pi">—</span></div>
+  <div class="s-row"><span>Property Tax</span><span class="s-val" id="sum_tax">—</span></div>
+  <div class="s-row"><span>Home Insurance</span><span class="s-val" id="sum_ins">—</span></div>
+  <div class="s-row"><span>HOA</span><span class="s-val" id="sum_hoa">—</span></div>
+  <hr class="s-divider">
+  <div class="s-total-row escrow-total">
+    <span>With Escrow</span>
+    <span class="s-val" id="totalEscrow">—</span>
+  </div>
+  <div class="s-total-row noescrow-total" style="margin-top:6px;">
+    <span>No Escrow (P&amp;I only)</span>
+    <span class="s-val" id="totalNoEscrow">—</span>
+  </div>
+  <hr class="s-divider" style="margin-top:10px;">
+  <div class="s-row" style="font-size:0.82rem;">
+    <span style="color:#90a4c8;">If no escrow — reserve monthly</span>
+    <span class="s-val" style="color:#ffb74d;" id="reserveMonthly">—</span>
+  </div>
+</div>
+
+<!-- Closing Costs -->
+<div class="card">
+  <div class="card-title">Closing Costs</div>
+
+  <div class="toggle-row">
+    <span class="toggle-label-txt">Escrow:</span>
+    <button class="tbtn active" id="btn_esc" onclick="setEscrow(true)">Escrow</button>
+    <button class="tbtn" id="btn_noesc" onclick="setEscrow(false)">No Escrow</button>
+  </div>
+
+  <!-- A: Lender Fees -->
+  <div class="cc-section-title">Section A — Lender Fees</div>
+  <div class="cc-input-row">
+    <span>Processing Fee</span>
+    <div class="input-wrap"><span class="sym">$</span><input type="number" class="sm-input" id="lf_proc" value="495" min="0" step="1" oninput="calc()" onchange="calc()"></div>
+  </div>
+  <div class="cc-input-row">
+    <span>Technology Fee</span>
+    <div class="input-wrap"><span class="sym">$</span><input type="number" class="sm-input" id="lf_tech" value="60" min="0" step="1" oninput="calc()" onchange="calc()"></div>
+  </div>
+  <div class="cc-input-row">
+    <span>Underwriting Fee</span>
+    <div class="input-wrap"><span class="sym">$</span><input type="number" class="sm-input" id="lf_uw" value="995" min="0" step="1" oninput="calc()" onchange="calc()"></div>
+  </div>
+  <div class="cc-subtotal"><span>Subtotal A</span><span id="cc_A">—</span></div>
+
+  <!-- B: Cannot Shop -->
+  <div class="cc-section-title">Section B — Cannot Shop</div>
+  <div class="cc-row"><span>Appraisal Fee</span><span class="cc-val">$650</span></div>
+  <div class="cc-row"><span>Credit Report</span><span class="cc-val">$150</span></div>
+  <div class="cc-subtotal"><span>Subtotal B</span><span>$800</span></div>
+
+  <!-- C: Can Shop -->
+  <div class="cc-section-title">Section C — Can Shop</div>
+  <div class="cc-row"><span>Survey Fee</span><span class="cc-val">$500</span></div>
+  <div class="cc-row"><span>Closing Fee</span><span class="cc-val">$600</span></div>
+  <div class="cc-row"><span>Endorsements</span><span class="cc-val">$623</span></div>
+  <div class="cc-row"><span>Fraud Prevention</span><span class="cc-val">$15</span></div>
+  <div class="cc-row"><span>Lender's Title Policy</span><span class="cc-val">$3,171</span></div>
+  <div class="cc-row"><span>TX Guaranty Fee</span><span class="cc-val">$2</span></div>
+  <div class="cc-subtotal"><span>Subtotal C</span><span>$4,911</span></div>
+
+  <!-- E: Govt Fees -->
+  <div class="cc-section-title">Section E — Govt Fees</div>
+  <div class="cc-row"><span>Recording Fees</span><span class="cc-val">$186</span></div>
+
+  <!-- F: Prepaids -->
+  <div class="cc-section-title">Section F — Prepaids</div>
+  <div class="cc-row"><span>Homeowner's Insurance (12 mo)</span><span class="cc-val" id="cc_ins12">—</span></div>
+  <div class="cc-input-row">
+    <span style="font-size:0.875rem;color:#555;">Prepaid Interest</span>
+    <div class="input-wrap"><span class="sym">$</span><input type="number" class="sm-input" id="cc_prepint" value="98" min="0" step="1" oninput="calc()" onchange="calc()"></div>
+  </div>
+  <div class="cc-subtotal"><span>Subtotal F</span><span id="cc_F">—</span></div>
+
+  <!-- H: Optional -->
+  <div class="cc-section-title">Section H — Optional</div>
+  <div class="cc-row">
+    <label class="opt-label">
+      <input type="checkbox" id="cc_ownerstitle" checked onchange="calc()">
+      Owner's Title Insurance
+    </label>
+    <span class="opt-val">$821</span>
+  </div>
+
+  <!-- HOA One-Time -->
+  <div class="cc-section-title">HOA One-Time Fees</div>
+  <div class="hoa-toggle">
+    <input type="checkbox" id="cc_hoaInclude" checked onchange="calc()">
+    <span class="hoa-toggle-label">Include HOA one-time fees</span>
+  </div>
+  <div id="hoa_onetime_rows">
+    <div class="cc-row"><span>CAP / Assessment Fee</span><span class="cc-val">$1,463</span></div>
+    <div class="cc-row"><span>Transfer Fee</span><span class="cc-val">$345</span></div>
+    <div class="cc-row"><span>Statement of Account</span><span class="cc-val">$445</span></div>
+    <div class="cc-row"><span>Foundation Fee</span><span class="cc-val">$1,825</span></div>
+    <div class="cc-subtotal"><span>Subtotal HOA One-Time</span><span>$4,078</span></div>
+  </div>
+
+  <!-- Escrow reserves -->
+  <div class="reserve-box" id="reserve_box">
+    <div class="reserve-box-title">Escrow Reserves (collected at closing)</div>
+    <div class="cc-row"><span>2 months home insurance</span><span class="cc-val" id="cc_2mo">—</span></div>
+    <div class="cc-row"><span>6 months property tax</span><span class="cc-val" id="cc_6mo">—</span></div>
+    <div class="cc-subtotal"><span>Subtotal Reserves</span><span id="cc_res_sub">—</span></div>
+  </div>
+
+  <div class="grand-total">
+    <span class="gt-label">Total Closing Costs</span>
+    <span class="gt-val" id="closingTotal">—</span>
+  </div>
+
+  <!-- Seller's Incentive -->
+  <div class="cc-section-title" style="margin-top:18px;">Seller's Incentive</div>
+  <div class="cc-input-row">
+    <span>Seller's Incentive</span>
+    <div class="input-wrap"><span class="sym">$</span><input type="number" class="sm-input" id="sellersIncentive" value="15615" min="0" step="100" oninput="calc()" onchange="calc()"></div>
+  </div>
+
+  <div style="background:#e8f5e9;border-radius:11px;padding:14px 16px;margin-top:12px;display:flex;justify-content:space-between;align-items:center;">
+    <span style="font-size:0.75rem;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#2e7d32;">Out of Pocket Closing Costs</span>
+    <span style="font-size:1.2rem;font-weight:700;color:#1b5e20;" id="outOfPocket">—</span>
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<script>
+let useEscrow = true;
+
+function setEscrow(val) {
+  useEscrow = val;
+  document.getElementById('btn_esc').classList.toggle('active', val);
+  document.getElementById('btn_noesc').classList.toggle('active', !val);
+  document.getElementById('reserve_box').style.display = val ? 'block' : 'none';
+  calc();
+}
+
+function fmt(n) {
+  return '$' + Math.round(n).toLocaleString('en-US');
+}
+
+function fmtDec(n, d) {
+  return '$' + n.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+}
+
+function v(id) { return parseFloat(document.getElementById(id).value) || 0; }
+
+function calc() {
+  // --- Purchase ---
+  const salesPrice = v('salesPrice');
+  const downPct    = v('downPct');
+  const downAmt    = salesPrice * downPct / 100;
+  const loanAmt    = salesPrice - downAmt;
+
+  document.getElementById('downAmt').textContent = fmt(downAmt);
+  document.getElementById('loanAmt').textContent = fmt(loanAmt);
+
+  // --- P&I (30-yr amortization) ---
+  const annualRate = v('rate');
+  let pi = 0;
+  if (annualRate > 0 && loanAmt > 0) {
+    const r = annualRate / 100 / 12;
+    const n = 360;
+    pi = loanAmt * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+  }
+  document.getElementById('pi').textContent = fmtDec(pi, 0);
+
+  // --- Property Tax ---
+  const assessPct   = v('assessPct');
+  const taxRate     = v('taxRate');
+  const assessedVal = salesPrice * assessPct / 100;
+  const monthlyTax  = assessedVal * taxRate / 100 / 12;
+
+  document.getElementById('assessedVal').textContent = fmt(assessedVal);
+  document.getElementById('monthlyTax').textContent  = fmtDec(monthlyTax, 0);
+
+  // --- Insurance ---
+  const annualIns  = v('annualIns');
+  const monthlyIns = annualIns / 12;
+  document.getElementById('monthlyIns').textContent = fmtDec(monthlyIns, 0);
+
+  // --- HOA ---
+  const annualHOA  = v('annualHOA');
+  const monthlyHOA = annualHOA / 12;
+  document.getElementById('monthlyHOA').textContent = fmtDec(monthlyHOA, 0);
+
+  // --- Monthly Summary ---
+  document.getElementById('sum_pi').textContent  = fmtDec(pi, 0);
+  document.getElementById('sum_tax').textContent = fmtDec(monthlyTax, 0);
+  document.getElementById('sum_ins').textContent = fmtDec(monthlyIns, 0);
+  document.getElementById('sum_hoa').textContent = fmtDec(monthlyHOA, 0);
+  const withEscrowTotal = pi + monthlyTax + monthlyIns + monthlyHOA;
+  document.getElementById('totalEscrow').textContent   = fmtDec(withEscrowTotal, 0);
+  document.getElementById('totalNoEscrow').textContent = fmtDec(pi, 0);
+  document.getElementById('reserveMonthly').textContent = fmtDec(withEscrowTotal - pi, 0);
+
+  // --- Closing Costs ---
+  // Section A
+  const subtotalA = v('lf_proc') + v('lf_tech') + v('lf_uw');
+  document.getElementById('cc_A').textContent = fmt(subtotalA);
+
+  // Section B (fixed)
+  const subtotalB = 800;
+
+  // Section C (fixed)
+  const subtotalC = 4911;
+
+  // Section E (fixed)
+  const subtotalE = 186;
+
+  // Section F (dynamic insurance, editable prepaid interest)
+  const ins12mo    = annualIns;
+  const prepaidInt = v('cc_prepint');
+  const subtotalF  = ins12mo + prepaidInt;
+  document.getElementById('cc_ins12').textContent = fmt(ins12mo);
+  document.getElementById('cc_F').textContent     = fmt(subtotalF);
+
+  // Section H (optional checkbox)
+  const ownersTitle = document.getElementById('cc_ownerstitle').checked ? 821 : 0;
+
+  // HOA one-time (checkbox)
+  const includeHOA = document.getElementById('cc_hoaInclude').checked;
+  document.getElementById('hoa_onetime_rows').style.display = includeHOA ? 'block' : 'none';
+  const subtotalHOAOne = includeHOA ? 4078 : 0;
+
+  const baseTotal = subtotalA + subtotalB + subtotalC + subtotalE + subtotalF + ownersTitle + subtotalHOAOne;
+
+  // Escrow reserves (dynamic)
+  const twoMonthIns = monthlyIns * 2;
+  const sixMonthTax = monthlyTax * 6;
+  const reserves    = twoMonthIns + sixMonthTax;
+
+  document.getElementById('cc_2mo').textContent    = fmt(twoMonthIns);
+  document.getElementById('cc_6mo').textContent    = fmt(sixMonthTax);
+  document.getElementById('cc_res_sub').textContent = fmt(reserves);
+
+  const closingTotal = useEscrow ? baseTotal + reserves : baseTotal;
+  document.getElementById('closingTotal').textContent = fmt(closingTotal);
+
+  const incentive = v('sellersIncentive');
+  document.getElementById('outOfPocket').textContent = fmt(Math.max(0, closingTotal - incentive));
+}
+
+// Initialize
+calc();
+</script>
+</body>
+</html>
